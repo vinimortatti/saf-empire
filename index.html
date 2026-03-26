@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAF Empire – Brasileirão Masters 2026</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1d26;
+    --border:#2a2d38;--border2:#3a3d4a;
+    --text:#e8e6df;--text2:#c2c0b6;--text3:#888780;--text4:#5F5E5A;
+    --purple:#7F77DD;--purple2:#534AB7;--purple3:#AFA9EC;
+    --green:#1D9E75;--green2:#5DCAA5;
+    --red:#F09595;--red2:#C0392B;
+    --amber:#EF9F27;
+    --blue:#378ADD;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;font-size:14px}
+  a{color:var(--purple3);text-decoration:none}
+
+  /* ── TELAS ── */
+  .screen{display:none;min-height:100vh}
+  .screen.ativo{display:flex;flex-direction:column}
+
+  /* ── LOGIN ── */
+  #tela-login{align-items:center;justify-content:center;background:var(--bg)}
+  .login-box{background:var(--bg2);border:0.5px solid var(--border2);border-radius:16px;padding:40px 36px;width:360px;max-width:94vw;text-align:center}
+  .login-logo{font-size:26px;font-weight:700;margin-bottom:6px}
+  .login-logo span{color:var(--purple)}
+  .login-sub{font-size:13px;color:var(--text3);margin-bottom:28px}
+  .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:12px;cursor:pointer;width:100%;font-size:14px;color:var(--text);transition:background .15s}
+  .btn-google:hover{background:var(--border)}
+  .btn-google svg{width:20px;height:20px;flex-shrink:0}
+
+  /* ── LOBBY ── */
+  #tela-lobby{flex-direction:column}
+  .topbar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .logo{font-size:15px;font-weight:600;letter-spacing:.01em}
+  .logo span{color:var(--purple)}
+  .topbar-tags{display:flex;gap:8px;align-items:center}
+  .tag{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500}
+  .tag-s{background:#1e2030;color:var(--green2);border:0.5px solid var(--green)}
+  .tag-u{background:#1e2030;color:#97C459;border:0.5px solid #3B6D11}
+  .user-tag{font-size:12px;color:var(--text3);cursor:pointer}
+  .user-tag:hover{color:var(--text2)}
+
+  .lobby-body{display:flex;flex:1;overflow:hidden}
+  .sidebar{width:220px;background:var(--bg2);border-right:0.5px solid var(--border);padding:14px;flex-shrink:0;overflow-y:auto}
+  .sidebar-title{font-size:11px;color:var(--text4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+  .nav-item{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text3);transition:background .15s,color .15s;margin-bottom:2px}
+  .nav-item:hover{background:var(--bg3);color:var(--text2)}
+  .nav-item.ativo{background:var(--bg3);color:var(--purple3);font-weight:500}
+  .nav-item .badge{float:right;font-size:10px;padding:1px 6px;border-radius:8px;background:var(--purple2);color:#EEEDFE}
+
+  .main-area{flex:1;overflow-y:auto;padding:18px 20px}
+
+  /* ── PAINEL GENÉRICO ── */
+  .painel{display:none}
+  .painel.ativo{display:block}
+  .painel-titulo{font-size:16px;font-weight:600;margin-bottom:4px}
+  .painel-sub{font-size:12px;color:var(--text3);margin-bottom:18px}
+
+  /* ── GRIDS TIMES ── */
+  .serie-header{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px}
+  .serie-label{font-size:13px;font-weight:600}
+  .serie-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500}
+  .ba{background:#1a2e1a;color:#97C459;border:0.5px solid #3B6D11}
+  .bb{background:#1e1e2e;color:var(--purple3);border:0.5px solid var(--purple2)}
+
+  .clubs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:20px}
+  .club-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;position:relative}
+  .club-card:hover:not(.bloqueado){border-color:var(--purple2);background:var(--bg3)}
+  .club-card.bloqueado{opacity:.5;cursor:default}
+  .club-card.meu-time{border-color:var(--green);background:#0f1e14}
+  .crest{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+  .club-nome{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .club-cidade{font-size:10px;color:var(--text4);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .club-status{font-size:10px;padding:2px 6px;border-radius:7px;display:inline-block;font-weight:500}
+  .status-livre{background:#1a2e1a;color:#97C459}
+  .status-ocupado{background:#2a1a1a;color:var(--red)}
+  .status-seu{background:#0f2e1e;color:var(--green2)}
+  .status-bot{background:#1e1e1e;color:var(--text3)}
+  .club-dono{font-size:10px;color:var(--text4);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* ── MODAL ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100}
+  .modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:14px;padding:24px;width:330px;max-width:94vw;text-align:center}
+  .modal-crest{width:52px;height:52px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff}
+  .modal-title{font-size:16px;font-weight:600;margin-bottom:2px}
+  .modal-sub{font-size:12px;color:var(--text3);margin-bottom:14px}
+  .modal-stats{background:var(--bg3);border-radius:10px;padding:4px 0;margin-bottom:14px}
+  .modal-stat{display:flex;justify-content:space-between;padding:7px 14px;border-bottom:0.5px solid var(--border);font-size:12px}
+  .modal-stat:last-child{border-bottom:none}
+  .modal-stat-label{color:var(--text3)}
+  .modal-stat-val{color:var(--text);font-weight:500}
+  .modal-lore{font-size:12px;color:var(--text3);line-height:1.6;padding:10px 12px;background:var(--bg3);border-radius:8px;text-align:left;margin-bottom:14px}
+
+  /* ── BOTÕES ── */
+  .btn{border-radius:8px;padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;width:100%;transition:background .15s;margin-bottom:8px}
+  .btn-primary{background:var(--purple2);color:#EEEDFE;border:none}
+  .btn-primary:hover{background:var(--purple)}
+  .btn-secondary{background:transparent;color:var(--text3);border:0.5px solid var(--border2)}
+  .btn-secondary:hover{background:var(--bg3);color:var(--text2)}
+  .btn-danger{background:#2a1010;color:var(--red);border:0.5px solid #3a1515}
+  .btn-danger:hover{background:#3a1515}
+
+  /* ── DASHBOARD DO CLUBE ── */
+  .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+  .metric{background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:12px}
+  .metric-label{font-size:11px;color:var(--text4);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+  .metric-value{font-size:22px;font-weight:600;color:var(--text)}
+  .metric-sub{font-size:11px;margin-top:3px}
+  .up{color:var(--green2)}.down{color:var(--red)}
+
+  .section-label{font-size:11px;color:var(--text4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;margin-top:18px}
+
+  /* ── PARTIDAS ── */
+  .match-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px}
+  .match-comp{font-size:11px;color:var(--text4);margin-bottom:8px}
+  .match-row{display:flex;align-items:center;justify-content:space-between}
+  .match-team{display:flex;align-items:center;gap:8px;flex:1}
+  .match-team.right{flex-direction:row-reverse}
+  .match-crest{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+  .match-nome{font-size:13px;color:var(--text2)}
+  .match-score{font-size:20px;font-weight:600;color:var(--amber);text-align:center;min-width:64px}
+  .match-info{font-size:11px;color:var(--text4);text-align:center}
+  .btn-simular{background:var(--purple2);color:#EEEDFE;border:none;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;margin-top:8px;transition:background .15s}
+  .btn-simular:hover{background:var(--purple)}
+
+  /* ── SIMULAÇÃO ── */
+  .sim-scorebar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:12px 18px;margin-bottom:12px}
+  .sim-team-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .sim-placar{font-size:28px;font-weight:700;color:var(--amber)}
+  .sim-minuto{font-size:11px;color:var(--text4);text-align:center}
+  .progress-bar{height:3px;background:var(--border);border-radius:2px;margin-top:6px}
+  .progress-fill{height:100%;background:var(--purple);border-radius:2px;transition:width .4s}
+  .sim-log{background:#080a0e;border:0.5px solid var(--border);border-radius:10px;padding:14px;min-height:220px;max-height:320px;overflow-y:auto;font-size:12px;line-height:2;color:var(--text2);margin-bottom:12px}
+  .ev-gol{color:var(--amber);font-weight:500}
+  .ev-cartao{color:var(--red)}
+  .ev-sub{color:var(--purple3)}
+  .ev-normal{color:var(--text2)}
+
+  /* ── MERCADO ── */
+  .market-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .filter-btn{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text3);transition:all .15s}
+  .filter-btn.ativo{background:var(--purple2);color:#EEEDFE;border-color:var(--purple2)}
+  .player-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+  .player-pos{font-size:10px;padding:3px 7px;border-radius:5px;font-weight:600;flex-shrink:0}
+  .player-info{flex:1}
+  .player-nome{font-size:13px;font-weight:500;color:var(--text2)}
+  .player-attrs{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap}
+  .attr{font-size:10px;padding:1px 5px;border-radius:4px;background:var(--bg3);color:var(--text3)}
+  .player-val{text-align:right;flex-shrink:0}
+  .player-preco{font-size:13px;font-weight:600;color:var(--amber)}
+  .player-clube{font-size:11px;color:var(--text4)}
+  .btn-oferta{margin-top:5px;font-size:11px;padding:4px 10px;background:var(--purple2);color:#EEEDFE;border:none;border-radius:6px;cursor:pointer}
+
+  /* ── FINANÇAS ── */
+  .fin-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+  .fin-row:last-child{border-bottom:none}
+  .fin-label{color:var(--text3)}
+  .fin-pos{color:var(--green2);font-weight:500}
+  .fin-neg{color:var(--red);font-weight:500}
+
+  /* ── ELENCO ── */
+  .elenco-table{width:100%;border-collapse:collapse;font-size:12px}
+  .elenco-table th{text-align:left;padding:6px 8px;color:var(--text4);font-weight:500;border-bottom:0.5px solid var(--border)}
+  .elenco-table td{padding:8px;border-bottom:0.5px solid var(--border);color:var(--text2)}
+  .elenco-table tr:hover td{background:var(--bg3)}
+  .moral-bar{height:4px;border-radius:2px;background:var(--border)}
+  .moral-fill{height:100%;border-radius:2px}
+
+  /* ── TATICAS ── */
+  .campo{background:#0f2a0f;border:0.5px solid #1a4a1a;border-radius:12px;padding:20px;text-align:center;position:relative;min-height:320px;margin-bottom:14px}
+  .campo-linha{display:flex;justify-content:center;gap:16px;margin-bottom:24px}
+  .jogador-campo{background:rgba(0,100,0,.5);border:1.5px solid var(--green2);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green2);font-weight:600;cursor:pointer;transition:background .15s}
+  .jogador-campo:hover{background:rgba(0,150,0,.5)}
+
+  /* ── CHAT ── */
+  .chat-msgs{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:12px;min-height:220px;max-height:300px;overflow-y:auto;margin-bottom:10px;font-size:13px}
+  .chat-msg{margin-bottom:10px}
+  .chat-author{font-weight:600;color:var(--purple3);font-size:12px}
+  .chat-time{font-size:10px;color:var(--text4);margin-left:6px}
+  .chat-text{color:var(--text2);margin-top:2px;line-height:1.5}
+  .chat-input-row{display:flex;gap:8px}
+  .chat-input{flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px}
+  .chat-input:focus{outline:none;border-color:var(--purple2)}
+  .btn-send{background:var(--purple2);color:#EEEDFE;border:none;border-radius:8px;padding:9px 16px;cursor:pointer;font-size:13px}
+
+  /* ── TABELA ── */
+  .tabela-table{width:100%;border-collapse:collapse;font-size:12px}
+  .tabela-table th{text-align:center;padding:6px;color:var(--text4);font-weight:500;border-bottom:0.5px solid var(--border)}
+  .tabela-table th:first-child{text-align:left;padding-left:8px}
+  .tabela-table td{padding:7px 6px;border-bottom:0.5px solid var(--border);text-align:center;color:var(--text2)}
+  .tabela-table td:first-child{text-align:left;padding-left:8px;font-weight:500}
+  .tabela-table tr:hover td{background:var(--bg3)}
+  .tabela-table tr.meu-time td{background:#0f1e14}
+  .pos-zona{display:inline-block;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:700;text-align:center;line-height:18px}
+  .z-lib{background:#1a2e1a;color:#97C459}
+  .z-sul{background:#1e1e2e;color:var(--purple3)}
+  .z-rel{background:#2a1a1a;color:var(--red)}
+
+  /* ── NOTIFICAÇÕES ── */
+  .notif-area{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
+  .notif{background:var(--bg2);border:0.5px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text2);max-width:300px;animation:slideIn .3s ease}
+  .notif-title{font-weight:600;color:var(--text);margin-bottom:2px;font-size:12px}
+  @keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+
+  /* ── RESPONSIVO ── */
+  @media(max-width:700px){
+    .sidebar{display:none}
+    .metrics-grid{grid-template-columns:repeat(2,1fr)}
+    .clubs-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     TELA 1 — LOGIN
+══════════════════════════════════════ -->
+<div id="tela-login" class="screen ativo">
+  <div class="login-box">
+    <div class="login-logo">SAF <span>Empire</span></div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:4px">Brasileirão Masters 2026</div>
+    <div class="login-sub">Seja dono de uma SAF. Dispute Brasileirão, Libertadores e Copa do Brasil com seus amigos.</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Entrar com Google
+    </button>
+    <div style="margin-top:14px;font-size:11px;color:var(--text4)">Convide seus amigos pelo link após entrar.<br>Gratuito. Sem instalação.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TELA 2 — LOBBY / JOGO PRINCIPAL
+══════════════════════════════════════ -->
+<div id="tela-lobby" class="screen">
+  <div class="topbar">
+    <div class="logo">SAF <span>Empire</span> · Brasileirão 2026</div>
+    <div class="topbar-tags">
+      <span class="tag tag-s">Temporada 2026</span>
+      <span class="tag tag-u" id="tag-online">1 online</span>
+      <span class="user-tag" id="user-display" onclick="logout()">sair</span>
+    </div>
+  </div>
+
+  <div class="lobby-body">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-title">Menu</div>
+      <div class="nav-item ativo" onclick="abrirPainel('lobby')">Escolher clube</div>
+      <div class="nav-item" onclick="abrirPainel('dashboard')" id="nav-dashboard">Meu clube</div>
+      <div class="nav-item" onclick="abrirPainel('tabela')">Tabela</div>
+      <div class="nav-item" onclick="abrirPainel('elenco')">Elenco</div>
+      <div class="nav-item" onclick="abrirPainel('taticas')">Táticas</div>
+      <div class="nav-item" onclick="abrirPainel('simulacao')">Simulação</div>
+      <div class="nav-item" onclick="abrirPainel('mercado')">Mercado <span class="badge" id="badge-mercado">5</span></div>
+      <div class="nav-item" onclick="abrirPainel('financas')">Finanças</div>
+      <div class="nav-item" onclick="abrirPainel('chat')">Chat geral <span class="badge" id="badge-chat">0</span></div>
+      <div style="margin-top:24px;font-size:11px;color:var(--text4)">Próxima rodada</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px" id="prox-rodada">Rodada 1 · sábado</div>
+    </div>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="main-area">
+
+      <!-- ── PAINEL: LOBBY ── -->
+      <div id="painel-lobby" class="painel ativo">
+        <div class="painel-titulo">Escolha sua SAF</div>
+        <div class="painel-sub">Clique em um time disponível para assumir o controle. Primeiro a chegar, primeiro a servir.</div>
+
+        <div class="serie-header">
+          <span class="serie-label">Série A — Brasileirão 2026</span>
+          <span class="serie-badge ba">20 times</span>
+        </div>
+        <div class="clubs-grid" id="grid-serie-a"></div>
+
+        <div class="serie-header">
+          <span class="serie-label">Série B — Brasileirão 2026</span>
+          <span class="serie-badge bb">20 times</span>
+        </div>
+        <div class="clubs-grid" id="grid-serie-b"></div>
+      </div>
+
+      <!-- ── PAINEL: DASHBOARD ── -->
+      <div id="painel-dashboard" class="painel">
+        <div class="painel-titulo" id="dash-titulo">Meu clube</div>
+        <div class="painel-sub" id="dash-sub">Visão geral da sua SAF</div>
+        <div class="metrics-grid">
+          <div class="metric"><div class="metric-label">Caixa</div><div class="metric-value" id="m-caixa">R$ 0M</div><div class="metric-sub up" id="m-caixa-sub"></div></div>
+          <div class="metric"><div class="metric-label">Folha</div><div class="metric-value" id="m-folha">R$ 0M</div><div class="metric-sub down">/mês</div></div>
+          <div class="metric"><div class="metric-label">Elenco</div><div class="metric-value" id="m-elenco">0</div><div class="metric-sub" style="color:var(--text4)">jogadores</div></div>
+          <div class="metric"><div class="metric-label">Posição</div><div class="metric-value" id="m-posicao">–</div><div class="metric-sub" style="color:var(--text4)" id="m-posicao-sub">Série A</div></div>
+        </div>
+        <div class="section-label">Próximas partidas</div>
+        <div id="proximas-partidas"></div>
+        <div class="section-label">Últimos resultados</div>
+        <div id="ultimos-resultados"></div>
+      </div>
+
+      <!-- ── PAINEL: TABELA ── -->
+      <div id="painel-tabela" class="painel">
+        <div class="painel-titulo">Tabela do Brasileirão</div>
+        <div class="painel-sub">Classificação ao vivo da Série A</div>
+        <table class="tabela-table">
+          <thead><tr>
+            <th style="width:30px">#</th><th>Time</th>
+            <th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th>
+          </tr></thead>
+          <tbody id="tabela-body"></tbody>
+        </table>
+        <div style="display:flex;gap:12px;margin-top:12px;font-size:11px;color:var(--text4)">
+          <span><span class="pos-zona z-lib">●</span> Libertadores</span>
+          <span><span class="pos-zona z-sul">●</span> Sul-Americana</span>
+          <span><span class="pos-zona z-rel">●</span> Rebaixamento</span>
+        </div>
+      </div>
+
+      <!-- ── PAINEL: ELENCO ── -->
+      <div id="painel-elenco" class="painel">
+        <div class="painel-titulo">Elenco</div>
+        <div class="painel-sub">Gerencie seus jogadores, moral e contratos</div>
+        <table class="elenco-table" id="elenco-table">
+          <thead><tr>
+            <th>Pos</th><th>Nome</th><th>Idade</th><th>Overall</th><th>Potencial</th><th>Moral</th><th>Salário</th>
+          </tr></thead>
+          <tbody id="elenco-body"></tbody>
+        </table>
+      </div>
+
+      <!-- ── PAINEL: TÁTICAS ── -->
+      <div id="painel-taticas" class="painel">
+        <div class="painel-titulo">Táticas</div>
+        <div class="painel-sub">Defina a formação e o estilo de jogo</div>
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <div>
+            <div class="section-label">Formação</div>
+            <select id="sel-formacao" style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px">
+              <option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option>
+              <option>3-5-2</option><option>5-3-2</option><option>4-1-4-1</option>
+            </select>
+          </div>
+          <div>
+            <div class="section-label">Estilo</div>
+            <select id="sel-estilo" style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px">
+              <option>Pressão alta</option><option>Posse de bola</option>
+              <option>Contra-ataque</option><option>Jogo direto</option>
+            </select>
+          </div>
+          <div>
+            <div class="section-label">Ritmo</div>
+            <select id="sel-ritmo" style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px">
+              <option>Normal</option><option>Acelerado</option><option>Lento</option>
+            </select>
+          </div>
+        </div>
+        <div class="campo" id="campo-view"></div>
+        <button class="btn btn-primary" onclick="salvarTaticas()">Salvar táticas</button>
+      </div>
+
+      <!-- ── PAINEL: SIMULAÇÃO ── -->
+      <div id="painel-simulacao" class="painel">
+        <div class="painel-titulo">Simulação de partida</div>
+        <div class="painel-sub" id="sim-descricao">Selecione uma partida no Dashboard para simular</div>
+        <div class="sim-scorebar">
+          <div class="sim-team-name">
+            <div class="match-crest" id="sim-crest-casa" style="background:#C0392B;width:28px;height:28px;font-size:10px"></div>
+            <span id="sim-nome-casa">–</span>
+          </div>
+          <div style="text-align:center">
+            <div class="sim-placar" id="sim-placar">0 — 0</div>
+            <div class="sim-minuto" id="sim-minuto">0'</div>
+            <div class="progress-bar" style="width:140px;margin:4px auto 0"><div class="progress-fill" id="sim-prog" style="width:0%"></div></div>
+          </div>
+          <div class="sim-team-name" style="flex-direction:row-reverse">
+            <div class="match-crest" id="sim-crest-fora" style="background:#1565C0;width:28px;height:28px;font-size:10px"></div>
+            <span id="sim-nome-fora">–</span>
+          </div>
+        </div>
+        <div class="sim-log" id="sim-log"><div style="color:var(--text4)">A partida ainda não começou.</div></div>
+        <button class="btn btn-primary" id="btn-simular" onclick="avancaSim()">▶ Iniciar simulação</button>
+      </div>
+
+      <!-- ── PAINEL: MERCADO ── -->
+      <div id="painel-mercado" class="painel">
+        <div class="painel-titulo">Mercado de transferências</div>
+        <div class="painel-sub">Compre, venda e empreste jogadores com outros donos de SAF</div>
+        <div class="market-filters">
+          <button class="filter-btn ativo" onclick="filtrarMercado('todos',this)">Todos</button>
+          <button class="filter-btn" onclick="filtrarMercado('AT',this)">Atacantes</button>
+          <button class="filter-btn" onclick="filtrarMercado('MC',this)">Meias</button>
+          <button class="filter-btn" onclick="filtrarMercado('ZAG',this)">Zagueiros</button>
+          <button class="filter-btn" onclick="filtrarMercado('GL',this)">Goleiros</button>
+        </div>
+        <div id="lista-mercado"></div>
+      </div>
+
+      <!-- ── PAINEL: FINANÇAS ── -->
+      <div id="painel-financas" class="painel">
+        <div class="painel-titulo">Finanças da SAF</div>
+        <div class="painel-sub">Gerencie receitas, despesas e investimentos</div>
+        <div class="metrics-grid">
+          <div class="metric"><div class="metric-label">Receita/mês</div><div class="metric-value" id="fin-receita">R$ 0M</div><div class="metric-sub up">+patrocínios</div></div>
+          <div class="metric"><div class="metric-label">Despesas/mês</div><div class="metric-value" id="fin-despesa">R$ 0M</div><div class="metric-sub down">folha + CT</div></div>
+          <div class="metric"><div class="metric-label">Lucro líquido</div><div class="metric-value" id="fin-lucro">R$ 0M</div><div class="metric-sub up" id="fin-lucro-sub"></div></div>
+          <div class="metric"><div class="metric-label">Dívida total</div><div class="metric-value" id="fin-divida">R$ 0M</div><div class="metric-sub down">empréstimos</div></div>
+        </div>
+        <div class="section-label">Detalhamento</div>
+        <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:10px 14px">
+          <div id="fin-rows"></div>
+        </div>
+        <div class="section-label">Ações</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button class="btn btn-secondary" onclick="pedirEmprestimo()">Pedir empréstimo</button>
+          <button class="btn btn-secondary" onclick="negociarPatrocinio()">Negociar patrocínio</button>
+        </div>
+      </div>
+
+      <!-- ── PAINEL: CHAT ── -->
+      <div id="painel-chat" class="painel">
+        <div class="painel-titulo">Chat geral dos donos</div>
+        <div class="painel-sub">Negocie, provoque e combine transfers em tempo real</div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-input" placeholder="Mensagem..." onkeydown="if(event.key==='Enter')enviarChat()">
+          <button class="btn-send" onclick="enviarChat()">Enviar</button>
+        </div>
+      </div>
+
+    </div><!-- /main-area -->
+  </div><!-- /lobby-body -->
+</div><!-- /tela-lobby -->
+
+<!-- Notificações -->
+<div class="notif-area" id="notif-area"></div>
+
+<!-- Modal genérico -->
+<div id="modal-container"></div>
+
+<!-- ══════════════════════════════════════
+     FIREBASE + LÓGICA DO JOGO
+══════════════════════════════════════ -->
+<script type="module">
+// ─────────────────────────────────────
+// CONFIGURAÇÃO FIREBASE
+// Substitua os valores abaixo com os do seu projeto Firebase
+// (Instruções no PASSO_A_PASSO.txt)
+// ─────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, update, onValue, push, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "COLE_SUA_API_KEY_AQUI",
+  authDomain: "COLE_SEU_AUTH_DOMAIN_AQUI",
+  databaseURL: "COLE_SUA_DATABASE_URL_AQUI",
+  projectId: "COLE_SEU_PROJECT_ID_AQUI",
+  storageBucket: "COLE_SEU_STORAGE_BUCKET_AQUI",
+  messagingSenderId: "COLE_SEU_MESSAGING_SENDER_ID_AQUI",
+  appId: "COLE_SEU_APP_ID_AQUI"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// ─────────────────────────────────────
+// DADOS DOS TIMES
+// ─────────────────────────────────────
+const SERIE_A = [
+  {id:'FLA', nome:'Flamengo',       cidade:'Rio de Janeiro',    cor:'#C0392B'},
+  {id:'PAL', nome:'Palmeiras',      cidade:'São Paulo',         cor:'#1a7a2e'},
+  {id:'ATM', nome:'Atlético-MG',    cidade:'Belo Horizonte',    cor:'#2C3E50'},
+  {id:'COR', nome:'Corinthians',    cidade:'São Paulo',         cor:'#1a1a1a'},
+  {id:'SAO', nome:'São Paulo',      cidade:'São Paulo',         cor:'#D32F2F'},
+  {id:'BOT', nome:'Botafogo',       cidade:'Rio de Janeiro',    cor:'#212121'},
+  {id:'FLU', nome:'Fluminense',     cidade:'Rio de Janeiro',    cor:'#8B0000'},
+  {id:'INT', nome:'Internacional',  cidade:'Porto Alegre',      cor:'#B71C1C'},
+  {id:'GRE', nome:'Grêmio',         cidade:'Porto Alegre',      cor:'#2980B9'},
+  {id:'SAN', nome:'Santos',         cidade:'Santos',            cor:'#1a1a1a'},
+  {id:'BAH', nome:'Bahia',          cidade:'Salvador',          cor:'#1565C0'},
+  {id:'VAS', nome:'Vasco',          cidade:'Rio de Janeiro',    cor:'#2C3E50'},
+  {id:'CRU', nome:'Cruzeiro',       cidade:'Belo Horizonte',    cor:'#1565C0'},
+  {id:'MIR', nome:'Mirassol',       cidade:'Mirassol',          cor:'#F39C12'},
+  {id:'RBB', nome:'RB Bragantino',  cidade:'Bragança Paulista', cor:'#E53935'},
+  {id:'VIT', nome:'Vitória',        cidade:'Salvador',          cor:'#B71C1C'},
+  {id:'ATP', nome:'Athletico-PR',   cidade:'Curitiba',          cor:'#C62828'},
+  {id:'COT', nome:'Coritiba',       cidade:'Curitiba',          cor:'#2E7D32'},
+  {id:'CHA', nome:'Chapecoense',    cidade:'Chapecó',           cor:'#388E3C'},
+  {id:'REM', nome:'Remo',           cidade:'Belém',             cor:'#1565C0'},
+];
+const SERIE_B = [
+  {id:'AME', nome:'América-MG',     cidade:'Belo Horizonte',       cor:'#2E7D32'},
+  {id:'ATH', nome:'Athletic Club',  cidade:'São João del-Rei',     cor:'#B71C1C'},
+  {id:'ATG', nome:'Atlético-GO',    cidade:'Goiânia',              cor:'#E53935'},
+  {id:'AVA', nome:'Avaí',           cidade:'Florianópolis',        cor:'#1565C0'},
+  {id:'BSP', nome:'Botafogo-SP',    cidade:'Ribeirão Preto',       cor:'#212121'},
+  {id:'CEA', nome:'Ceará',          cidade:'Fortaleza',            cor:'#212121'},
+  {id:'CRB', nome:'CRB',            cidade:'Maceió',               cor:'#0D47A1'},
+  {id:'CRI', nome:'Criciúma',       cidade:'Criciúma',             cor:'#F9A825'},
+  {id:'CUI', nome:'Cuiabá',         cidade:'Cuiabá',               cor:'#EF6C00'},
+  {id:'FOR', nome:'Fortaleza',      cidade:'Fortaleza',            cor:'#E65100'},
+  {id:'GOI', nome:'Goiás',          cidade:'Goiânia',              cor:'#2E7D32'},
+  {id:'JUV', nome:'Juventude',      cidade:'Caxias do Sul',        cor:'#2E7D32'},
+  {id:'LON', nome:'Londrina',       cidade:'Londrina',             cor:'#B71C1C'},
+  {id:'NOV', nome:'Novorizontino',  cidade:'Novo Horizonte',       cor:'#E53935'},
+  {id:'NAU', nome:'Náutico',        cidade:'Recife',               cor:'#B71C1C'},
+  {id:'OPE', nome:'Operário-PR',    cidade:'Ponta Grossa',         cor:'#1a1a1a'},
+  {id:'PON', nome:'Ponte Preta',    cidade:'Campinas',             cor:'#1a1a1a'},
+  {id:'SPO', nome:'Sport',          cidade:'Recife',               cor:'#B71C1C'},
+  {id:'SBE', nome:'São Bernardo',   cidade:'São Bernardo do Campo', cor:'#1565C0'},
+  {id:'VIL', nome:'Vila Nova',      cidade:'Goiânia',              cor:'#E53935'},
+];
+
+// Lores das SAFs
+const LORES = {
+  FLA:'John Textor e visão global. Sua missão: dominar o futebol sul-americano com dados e inteligência.',
+  SAN:'Neymar voltou ao Peixe. Gabigol também. Santos quer reconquistar o Brasil.',
+  BOT:'O Botafogo de Textor quer provar que a revolução data-driven chegou ao futebol brasileiro.',
+  PAL:'O Verdão tem a melhor estrutura do país. Seu desafio é mantê-la no topo.',
+  ATM:'O Galo quer o tetra. Arena MRV cheia e um elenco de respeito à sua disposição.',
+  COR:'A Fiel exige respeito. Com o apoio de 30 milhões de torcedores, reconstrua o Timão.',
+  FLU:'O Flu quer recuperar o brilho do Fluminense tri-campeão da América.',
+  GRE:'Imortal Tricolor. A Arena é sua fortaleza. Mire o hexacampeonato.',
+  INT:'O Colorado quer hegemonia gaúcha. Beira-Rio repleto te espera.',
+  SAO:'O gigante do Morumbi com nova SAF. São Paulo quer voltar ao topo.',
+};
+
+// ─────────────────────────────────────
+// ESTADO LOCAL
+// ─────────────────────────────────────
+let usuarioAtual = null;
+let meuTimeId = null;
+let meuTime = null;
+let todosOsTimes = {};
+let tabela = [];
+let simEventos = [];
+let simIndex = 0;
+let simGolsCasa = 0;
+let simGolsFora = 0;
+let simPartidaAtual = null;
+let chatMsgCount = 0;
+
+// ─────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────
+window.loginGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch(e) { alert('Erro no login: ' + e.message); }
+};
+
+window.logout = async () => {
+  if(confirm('Sair do jogo?')) await signOut(auth);
+};
+
+onAuthStateChanged(auth, async user => {
+  if(user) {
+    usuarioAtual = user;
+    document.getElementById('user-display').textContent = user.displayName?.split(' ')[0] || 'sair';
+    document.getElementById('tela-login').classList.remove('ativo');
+    document.getElementById('tela-lobby').classList.add('ativo');
+    await iniciarJogo();
+  } else {
+    usuarioAtual = null;
+    document.getElementById('tela-lobby').classList.remove('ativo');
+    document.getElementById('tela-login').classList.add('ativo');
+  }
+});
+
+// ─────────────────────────────────────
+// INICIAR JOGO
+// ─────────────────────────────────────
+async function iniciarJogo() {
+  // Inicializa estrutura do jogo se não existir
+  const jogoRef = ref(db, 'jogo/config');
+  const snap = await get(jogoRef);
+  if(!snap.exists()) {
+    await set(jogoRef, { temporada: 2026, rodada: 1, criado: serverTimestamp() });
+    await inicializarTabela();
+  }
+
+  // Observa times em tempo real
+  onValue(ref(db, 'times'), snap => {
+    todosOsTimes = snap.val() || {};
+    renderGrids();
+    verificarMeuTime();
+  });
+
+  // Observa tabela
+  onValue(ref(db, 'tabela'), snap => {
+    const dados = snap.val() || {};
+    tabela = Object.values(dados).sort((a,b)=> b.pts - a.pts || b.sg - a.sg);
+    renderTabela();
+  });
+
+  // Observa chat
+  onValue(ref(db, 'chat'), snap => {
+    const msgs = snap.val() || {};
+    renderChat(msgs);
+  });
+
+  // Observa online
+  onValue(ref(db, 'online'), snap => {
+    const n = Object.keys(snap.val() || {}).length;
+    document.getElementById('tag-online').textContent = n + ' online';
+  });
+
+  // Marca presença
+  const onlineRef = ref(db, 'online/' + usuarioAtual.uid);
+  await set(onlineRef, { nome: usuarioAtual.displayName, ts: serverTimestamp() });
+}
+
+async function inicializarTabela() {
+  const batch = {};
+  SERIE_A.forEach((t,i) => {
+    batch['tabela/' + t.id] = {
+      id: t.id, nome: t.nome, serie: 'A',
+      pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
+    };
+  });
+  await update(ref(db), batch);
+}
+
+// ─────────────────────────────────────
+// RENDER GRIDS DE TIMES
+// ─────────────────────────────────────
+function abrev(id) { return id.replace(/[0-9]/g,'').substring(0,3); }
+
+function renderGrids() {
+  renderGridSerie(SERIE_A, 'grid-serie-a', 'A');
+  renderGridSerie(SERIE_B, 'grid-serie-b', 'B');
+}
+
+function renderGridSerie(times, elId, serie) {
+  const el = document.getElementById(elId);
+  if(!el) return;
+  el.innerHTML = times.map(t => {
+    const dados = todosOsTimes[t.id] || {};
+    const meu = dados.dono_uid === (usuarioAtual?.uid);
+    const ocupado = !!dados.dono_uid && !meu;
+    const bot = !dados.dono_uid && dados.bot;
+    let statusClass = 'status-livre';
+    let statusTxt = 'Disponível';
+    if(meu) { statusClass='status-seu'; statusTxt='Seu time'; }
+    else if(ocupado) { statusClass='status-ocupado'; statusTxt='Ocupado'; }
+    else if(bot) { statusClass='status-bot'; statusTxt='Bot IA'; }
+    return `<div class="club-card ${(ocupado||bot)?'bloqueado':''} ${meu?'meu-time':''}"
+      onclick="abrirModalTime('${t.id}','${serie}')">
+      <div class="crest" style="background:${t.cor}">${abrev(t.id)}</div>
+      <div class="club-nome">${t.nome}</div>
+      <div class="club-cidade">${t.cidade}</div>
+      <div class="club-status ${statusClass}">${statusTxt}</div>
+      ${dados.dono_nome && !meu ? `<div class="club-dono">${dados.dono_nome}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────
+// MODAL DE TIME
+// ─────────────────────────────────────
+window.abrirModalTime = (id, serie) => {
+  const dados = todosOsTimes[id] || {};
+  if(dados.dono_uid && dados.dono_uid !== usuarioAtual.uid) return;
+  if(meuTimeId && meuTimeId !== id) {
+    notif('Você já tem uma SAF!', 'Abandone seu time atual antes de assumir outro.');
+    return;
+  }
+  const todos = [...SERIE_A, ...SERIE_B];
+  const t = todos.find(x => x.id === id);
+  if(!t) return;
+  const jaBomba = dados.dono_uid === usuarioAtual.uid;
+  const budget = dados.budget || (Math.floor(Math.random()*46+5)*10);
+  const lore = LORES[id] || `A SAF do ${t.nome} começa uma nova era. R$${budget}M para escrever história.`;
+
+  document.getElementById('modal-container').innerHTML = `
+    <div class="modal-overlay" onclick="fecharModal(event,this)">
+      <div class="modal">
+        <div class="modal-crest" style="background:${t.cor}">${abrev(t.id)}</div>
+        <div class="modal-title">${t.nome}</div>
+        <div class="modal-sub">Série ${serie} · ${t.cidade}</div>
+        <div class="modal-stats">
+          <div class="modal-stat"><span class="modal-stat-label">Orçamento inicial</span><span class="modal-stat-val" style="color:var(--amber)">R$ ${budget}M</span></div>
+          <div class="modal-stat"><span class="modal-stat-label">Série</span><span class="modal-stat-val">Brasileirão ${serie}</span></div>
+          <div class="modal-stat"><span class="modal-stat-label">Cidade</span><span class="modal-stat-val">${t.cidade}</span></div>
+        </div>
+        <div class="modal-lore">${lore}</div>
+        ${jaBomba
+          ? `<button class="btn btn-danger" onclick="abandonarSAF('${id}')">Abandonar SAF</button>`
+          : `<button class="btn btn-primary" onclick="assumirSAF('${id}','${serie}',${budget})">Assumir o ${t.nome}</button>`
+        }
+        <button class="btn btn-secondary" onclick="document.getElementById('modal-container').innerHTML=''">Cancelar</button>
+      </div>
+    </div>`;
+};
+
+window.fecharModal = (ev, overlay) => {
+  if(ev.target === overlay) document.getElementById('modal-container').innerHTML = '';
+};
+
+// ─────────────────────────────────────
+// ASSUMIR / ABANDONAR SAF
+// ─────────────────────────────────────
+window.assumirSAF = async (id, serie, budget) => {
+  document.getElementById('modal-container').innerHTML = '';
+  const todos = [...SERIE_A, ...SERIE_B];
+  const t = todos.find(x => x.id === id);
+  const elenco = gerarElenco(t, budget);
+  await set(ref(db, 'times/' + id), {
+    id, nome: t.nome, cidade: t.cidade, cor: t.cor, serie,
+    dono_uid: usuarioAtual.uid,
+    dono_nome: usuarioAtual.displayName,
+    budget, caixa: budget,
+    folha: Math.round(budget * 0.15),
+    receita: Math.round(budget * 0.3),
+    divida: 0,
+    formacao: '4-3-3', estilo: 'Pressão alta',
+    elenco
+  });
+  meuTimeId = id;
+  notif('SAF assumida!', `Bem-vindo ao ${t.nome}. Boa sorte na temporada 2026!`);
+  setTimeout(() => abrirPainel('dashboard'), 800);
+};
+
+window.abandonarSAF = async (id) => {
+  if(!confirm('Tem certeza? Você perderá todo o progresso desse time.')) return;
+  await set(ref(db, 'times/' + id), null);
+  meuTimeId = null; meuTime = null;
+  document.getElementById('modal-container').innerHTML = '';
+  notif('SAF abandonada', 'Você pode escolher outro time agora.');
+};
+
+// ─────────────────────────────────────
+// VERIFICAR MEU TIME
+// ─────────────────────────────────────
+function verificarMeuTime() {
+  if(!usuarioAtual) return;
+  const meuEntry = Object.values(todosOsTimes).find(t => t.dono_uid === usuarioAtual.uid);
+  if(meuEntry) {
+    meuTimeId = meuEntry.id;
+    meuTime = meuEntry;
+    renderDashboard();
+    renderElenco();
+    renderFinancas();
+    renderTaticas();
+  }
+}
+
+// ─────────────────────────────────────
+// GERAR ELENCO (jogadores fictícios realistas)
+// ─────────────────────────────────────
+function gerarElenco(time, budget) {
+  const nivel = budget >= 200 ? 3 : budget >= 100 ? 2 : 1;
+  const base = nivel === 3 ? 78 : nivel === 2 ? 70 : 62;
+  const posicoes = [
+    {pos:'GL',n:2},{pos:'ZAG',n:4},{pos:'LAT',n:3},{pos:'VOL',n:3},
+    {pos:'MC',n:4},{pos:'MEI',n:3},{pos:'PE',n:4},{pos:'AT',n:3}
+  ];
+  const nomes = ['Gabriel','Lucas','Mateus','Pedro','Rafael','Felipe','Bruno',
+    'Diego','Rodrigo','André','Carlos','Paulo','João','Leandro','Alex',
+    'Caio','Thiago','Gustavo','Marcos','Eduardo'];
+  const sobrenomes = ['Silva','Santos','Oliveira','Costa','Souza','Lima','Pereira',
+    'Ferreira','Alves','Rodrigues','Nunes','Gomes','Martins','Rocha','Carvalho'];
+  const elenco = [];
+  let i = 0;
+  posicoes.forEach(({pos,n}) => {
+    for(let j=0;j<n;j++) {
+      const nome = nomes[Math.floor(Math.random()*nomes.length)] + ' ' +
+                   sobrenomes[Math.floor(Math.random()*sobrenomes.length)];
+      const ovr = Math.min(99, base + Math.floor(Math.random()*16) - 5);
+      const pot = Math.min(99, ovr + Math.floor(Math.random()*12));
+      const idade = 18 + Math.floor(Math.random()*16);
+      const salario = Math.round((ovr - 50) * 0.8 * (Math.random()*0.4 + 0.8));
+      elenco.push({
+        id: pos + '_' + i++,
+        nome, pos, idade,
+        ovr, pot, moral: 70 + Math.floor(Math.random()*25),
+        salario, contrato: 2027 + Math.floor(Math.random()*3)
+      });
+    }
+  });
+  return elenco;
+}
+
+// ─────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────
+function renderDashboard() {
+  if(!meuTime) return;
+  const t = meuTime;
+  document.getElementById('dash-titulo').textContent = t.nome;
+  document.getElementById('dash-sub').textContent = `SAF · Série ${t.serie} · ${t.cidade}`;
+  document.getElementById('m-caixa').textContent = 'R$ ' + t.caixa + 'M';
+  document.getElementById('m-folha').textContent = 'R$ ' + t.folha + 'M';
+  document.getElementById('m-elenco').textContent = (t.elenco || []).length;
+  document.getElementById('m-posicao-sub').textContent = 'Série ' + t.serie;
+
+  // Posição na tabela
+  const pos = tabela.findIndex(x => x.id === meuTimeId) + 1;
+  document.getElementById('m-posicao').textContent = pos > 0 ? pos + '°' : '–';
+
+  // Finanças rápidas
+  document.getElementById('fin-receita').textContent = 'R$ ' + t.receita + 'M';
+  document.getElementById('fin-despesa').textContent = 'R$ ' + t.folha + 'M';
+  const lucro = t.receita - t.folha;
+  document.getElementById('fin-lucro').textContent = (lucro >= 0 ? '+' : '') + 'R$ ' + lucro + 'M';
+  document.getElementById('fin-divida').textContent = 'R$ ' + (t.divida || 0) + 'M';
+
+  // Próximas partidas
+  const adversarios = SERIE_A.filter(x => x.id !== meuTimeId).slice(0,3);
+  document.getElementById('proximas-partidas').innerHTML = adversarios.map((adv,i) => {
+    const rodada = (tabela.find(x=>x.id===meuTimeId)?.j || 0) + i + 1;
+    return `<div class="match-card">
+      <div class="match-comp">Brasileirão A · Rodada ${rodada} · Domingo 16h</div>
+      <div class="match-row">
+        <div class="match-team">
+          <div class="match-crest" style="background:${t.cor};width:26px;height:26px;font-size:10px">${abrev(meuTimeId)}</div>
+          <span class="match-nome">${t.nome}</span>
+        </div>
+        <div><div class="match-score" style="font-size:15px;color:var(--text3)">vs</div>
+          <div class="match-info">em ${i+1} dia${i?'s':''}</div>
+          <button class="btn-simular" onclick="prepararSim('${meuTimeId}','${adv.id}')">Simular</button>
+        </div>
+        <div class="match-team right">
+          <div class="match-crest" style="background:${adv.cor};width:26px;height:26px;font-size:10px">${abrev(adv.id)}</div>
+          <span class="match-nome">${adv.nome}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Últimos resultados (mock inicial)
+  document.getElementById('ultimos-resultados').innerHTML = `
+    <div style="color:var(--text4);font-size:13px;padding:10px 0">Nenhum jogo disputado ainda nesta temporada.</div>`;
+}
+
+// ─────────────────────────────────────
+// ELENCO
+// ─────────────────────────────────────
+function renderElenco() {
+  if(!meuTime?.elenco) return;
+  const posOrd = ['GL','ZAG','LAT','VOL','MC','MEI','PE','AT'];
+  const elenco = [...(meuTime.elenco || [])].sort((a,b) =>
+    posOrd.indexOf(a.pos) - posOrd.indexOf(b.pos));
+  const corPos = {GL:'#85B7EB',ZAG:'#F09595',LAT:'#F09595',VOL:'#AFA9EC',
+    MC:'#97C459',MEI:'#EF9F27',PE:'#EF9F27',AT:'var(--red)'};
+  document.getElementById('elenco-body').innerHTML = elenco.map(j => {
+    const moralCor = j.moral >= 80 ? '#97C459' : j.moral >= 60 ? '#EF9F27' : '#F09595';
+    return `<tr>
+      <td><span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg3);color:${corPos[j.pos]||'var(--text3)'}">${j.pos}</span></td>
+      <td>${j.nome}</td>
+      <td style="color:var(--text3)">${j.idade}</td>
+      <td style="font-weight:600;color:${j.ovr>=80?'var(--green2)':j.ovr>=70?'var(--amber)':'var(--text2)'}">${j.ovr}</td>
+      <td style="color:var(--text3)">${j.pot}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="moral-bar" style="width:50px"><div class="moral-fill" style="width:${j.moral}%;background:${moralCor}"></div></div>
+          <span style="font-size:11px;color:${moralCor}">${j.moral}</span>
+        </div>
+      </td>
+      <td style="color:var(--amber)">R$${j.salario}k</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────
+// TÁTICAS
+// ─────────────────────────────────────
+function renderTaticas() {
+  if(!meuTime) return;
+  document.getElementById('sel-formacao').value = meuTime.formacao || '4-3-3';
+  document.getElementById('sel-estilo').value = meuTime.estilo || 'Pressão alta';
+  renderCampo();
+}
+
+function renderCampo() {
+  const formacao = document.getElementById('sel-formacao')?.value || '4-3-3';
+  const linhas = formacao.split('-').map(Number);
+  const t = meuTime;
+  const elenco = t?.elenco || [];
+  let campoHTML = '<div style="display:flex;flex-direction:column;gap:0">';
+  // GK
+  campoHTML += `<div class="campo-linha"><div class="jogador-campo">GL</div></div>`;
+  // Linhas
+  linhas.reverse().forEach((n, li) => {
+    const pos = li===0?'AT':li===1?'MC':'DEF';
+    campoHTML += `<div class="campo-linha">` +
+      Array(n).fill(0).map((_,i) =>
+        `<div class="jogador-campo" title="${pos} ${i+1}">${pos[0]}${i+1}</div>`
+      ).join('') + `</div>`;
+  });
+  campoHTML += '</div>';
+  document.getElementById('campo-view').innerHTML = campoHTML;
+}
+
+document.getElementById('sel-formacao')?.addEventListener('change', renderCampo);
+
+window.salvarTaticas = async () => {
+  if(!meuTimeId) return notif('Sem time!','Assuma uma SAF primeiro.');
+  const form = document.getElementById('sel-formacao').value;
+  const est = document.getElementById('sel-estilo').value;
+  await update(ref(db, 'times/' + meuTimeId), { formacao: form, estilo: est });
+  notif('Táticas salvas!', `Formação ${form} · ${est}`);
+};
+
+// ─────────────────────────────────────
+// SIMULAÇÃO DE PARTIDA
+// ─────────────────────────────────────
+window.prepararSim = (casaId, foraId) => {
+  const todos = [...SERIE_A, ...SERIE_B];
+  const casa = todosOsTimes[casaId] || todos.find(x=>x.id===casaId) || {};
+  const fora = todosOsTimes[foraId] || todos.find(x=>x.id===foraId) || {};
+  const nCasa = casa.nome || casaId;
+  const nFora = fora.nome || foraId;
+  const corCasa = casa.cor || '#555';
+  const corFora = fora.cor || '#555';
+
+  simPartidaAtual = { casaId, foraId, nCasa, nFora };
+  simEventos = gerarEventos(nCasa, nFora, casa, fora);
+  simIndex = 0; simGolsCasa = 0; simGolsFora = 0;
+
+  document.getElementById('sim-crest-casa').textContent = abrev(casaId);
+  document.getElementById('sim-crest-casa').style.background = corCasa;
+  document.getElementById('sim-crest-fora').textContent = abrev(foraId);
+  document.getElementById('sim-crest-fora').style.background = corFora;
+  document.getElementById('sim-nome-casa').textContent = nCasa;
+  document.getElementById('sim-nome-fora').textContent = nFora;
+  document.getElementById('sim-placar').textContent = '0 — 0';
+  document.getElementById('sim-minuto').textContent = "0'";
+  document.getElementById('sim-prog').style.width = '0%';
+  document.getElementById('sim-log').innerHTML = `<div style="color:var(--text4)">Pronto para simular. Clique em Iniciar.</div>`;
+  document.getElementById('btn-simular').textContent = '▶ Iniciar simulação';
+  document.getElementById('sim-descricao').textContent = `${nCasa} × ${nFora} · Brasileirão A`;
+  abrirPainel('simulacao');
+};
+
+function gerarEventos(nCasa, nFora, dadosCasa, dadosFora) {
+  const eventos = [];
+  const ovrCasa = mediaOvr(dadosCasa);
+  const ovrFora = mediaOvr(dadosFora);
+  const forçaCasa = ovrCasa + Math.random()*10;
+  const forçaFora = ovrFora + Math.random()*10;
+  const totalGols = Math.floor(Math.random()*5);
+  const golsCasa = Math.floor(totalGols * forçaCasa / (forçaCasa + forçaFora) + Math.random()*1.5);
+  const golsFora = Math.max(0, totalGols - golsCasa);
+
+  // Eventos de narrativa
+  const narr_casa = [
+    `${nCasa} começa bem, pressionando desde o primeiro minuto`,
+    `Boa jogada de combinação do ${nCasa} pela esquerda`,
+    `${nCasa} arrisca de fora da área, goleiro defende`,
+    `Falta perigosa para o ${nCasa}, cobrada por cima`,
+    `${nCasa} domina a posse de bola no meio-campo`,
+    `Contragolpe rápido do ${nCasa}, mas a defesa adversária afasta`,
+  ];
+  const narr_fora = [
+    `${nFora} responde com uma jogada de lado direito`,
+    `Boa saída de bola do ${nFora}`,
+    `${nFora} tenta pressionar a defesa adversária`,
+    `Escanteio do ${nFora}, cabeçada para fora`,
+    `${nFora} troca passes no meio, sem encontrar espaço`,
+  ];
+  const cartoes = [
+    `Cartão amarelo — jogador do ${nCasa} por entrada dura`,
+    `Cartão amarelo — jogador do ${nFora} por reclamação`,
+    `Cartão amarelo — jogador do ${nCasa} por falta tática`,
+  ];
+  const subs = [
+    `Substituição no ${nCasa}: meia jovem entra em campo`,
+    `Substituição no ${nFora}: treinador aposta em atacante`,
+    `Substituição no ${nCasa}: reforço tático no segundo tempo`,
+  ];
+
+  // Distribui eventos por minuto
+  const minutos = Array.from({length:90},(_,i)=>i+1);
+  let contGolsCasa = 0, contGolsFora = 0;
+
+  // Adiciona eventos narrativos
+  const minutosNarr = [3,8,12,18,24,30,35,42,48,55,60,67,73,80,87];
+  minutosNarr.forEach(m => {
+    if(m <= 45) {
+      eventos.push({min:m, tipo:'normal', txt: m%2===0 ? narr_casa[m%narr_casa.length] : narr_fora[m%narr_fora.length]});
+    } else {
+      eventos.push({min:m, tipo:'normal', txt: m%3===0 ? narr_fora[m%narr_fora.length] : narr_casa[m%narr_casa.length]});
+    }
+  });
+
+  // Adiciona gols
+  const posGolsCasa = distribuir(golsCasa, 1, 90);
+  const posGolsFora = distribuir(golsFora, 1, 90);
+  posGolsCasa.forEach(m => eventos.push({min:m, tipo:'gol', time:'casa', txt:`GOL! ${nCasa} marca!`}));
+  posGolsFora.forEach(m => eventos.push({min:m, tipo:'gol', time:'fora', txt:`GOL! ${nFora} empata!`}));
+
+  // Cartões e substituições
+  eventos.push({min:38, tipo:'cartao', txt: cartoes[0]});
+  eventos.push({min:56, tipo:'sub', txt: subs[0]});
+  eventos.push({min:68, tipo:'sub', txt: subs[1]});
+  if(Math.random()>0.7) eventos.push({min:75, tipo:'cartao', txt: cartoes[1]});
+
+  // Marcadores de tempo
+  eventos.push({min:45, tipo:'normal', txt:`Apito! Fim do primeiro tempo. ${nCasa} ${contGolsCasa}×${contGolsFora} ${nFora}`});
+  eventos.push({min:45.1, tipo:'normal', txt:'Intervalo — treinadores ajustam as táticas'});
+  eventos.push({min:46, tipo:'normal', txt:'Bola rolando para o segundo tempo!'});
+  eventos.push({min:91, tipo:'normal', txt:`Apito final! ${nCasa} ${golsCasa}×${golsFora} ${nFora}`});
+
+  eventos.sort((a,b) => a.min - b.min);
+  eventos._golsCasa = golsCasa;
+  eventos._golsFora = golsFora;
+  return eventos;
+}
+
+function mediaOvr(dados) {
+  if(!dados?.elenco?.length) return 65;
+  return Math.round(dados.elenco.reduce((s,j)=>s+j.ovr,0)/dados.elenco.length);
+}
+
+function distribuir(n, min, max) {
+  const arr = [];
+  for(let i=0;i<n;i++) arr.push(Math.floor(Math.random()*(max-min))+min);
+  return arr;
+}
+
+window.avancaSim = () => {
+  if(simIndex >= simEventos.length) return;
+  const btn = document.getElementById('btn-simular');
+  const log = document.getElementById('sim-log');
+  if(simIndex === 0) log.innerHTML = '';
+
+  // Avança 3 eventos por clique
+  let count = 0;
+  while(simIndex < simEventos.length && count < 4) {
+    const ev = simEventos[simIndex++];
+    const div = document.createElement('div');
+    const m = Math.floor(ev.min);
+    if(ev.tipo === 'gol') {
+      if(ev.time === 'casa') simGolsCasa++;
+      else simGolsFora++;
+      div.className = 'ev-gol';
+      div.textContent = `${m}' ⚽ ${ev.txt} (${simGolsCasa}×${simGolsFora})`;
+      document.getElementById('sim-placar').textContent = `${simGolsCasa} — ${simGolsFora}`;
+    } else if(ev.tipo === 'cartao') {
+      div.className = 'ev-cartao';
+      div.textContent = `${m}' 🟨 ${ev.txt}`;
+    } else if(ev.tipo === 'sub') {
+      div.className = 'ev-sub';
+      div.textContent = `${m}' ↕ ${ev.txt}`;
+    } else {
+      div.className = 'ev-normal';
+      div.textContent = `${m}' ${ev.txt}`;
+    }
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    if(ev.min > 0) {
+      const prog = Math.min(100, Math.round(ev.min / 91 * 100));
+      document.getElementById('sim-prog').style.width = prog + '%';
+      document.getElementById('sim-minuto').textContent = m + "'";
+    }
+    count++;
+  }
+
+  if(simIndex >= simEventos.length) {
+    btn.textContent = 'Partida encerrada';
+    btn.disabled = true;
+    // Salva resultado na tabela
+    salvarResultado(simPartidaAtual.casaId, simPartidaAtual.foraId, simGolsCasa, simGolsFora);
+    notif('Partida encerrada!', `${simPartidaAtual.nCasa} ${simGolsCasa}×${simGolsFora} ${simPartidaAtual.nFora}`);
+  } else {
+    btn.textContent = '▶ Continuar';
+  }
+};
+
+async function salvarResultado(casaId, foraId, gCasa, gFora) {
+  const atualizacoes = {};
+  const atualizar = (id, gMarcados, gSofridos) => {
+    const t = tabela.find(x=>x.id===id) || {j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0};
+    const v = gMarcados > gSofridos;
+    const e = gMarcados === gSofridos;
+    const d = gMarcados < gSofridos;
+    atualizacoes['tabela/'+id] = {
+      ...t, id,
+      j: t.j+1, v: t.v+(v?1:0), e: t.e+(e?1:0), d: t.d+(d?1:0),
+      gp: t.gp+gMarcados, gc: t.gc+gSofridos,
+      sg: (t.gp+gMarcados)-(t.gc+gSofridos),
+      pts: t.pts+(v?3:e?1:0)
+    };
+  };
+  if(SERIE_A.find(x=>x.id===casaId)) atualizar(casaId, gCasa, gFora);
+  if(SERIE_A.find(x=>x.id===foraId)) atualizar(foraId, gFora, gCasa);
+  await update(ref(db), atualizacoes);
+}
+
+// ─────────────────────────────────────
+// TABELA
+// ─────────────────────────────────────
+function renderTabela() {
+  const body = document.getElementById('tabela-body');
+  if(!body) return;
+  body.innerHTML = tabela.map((t,i) => {
+    const pos = i+1;
+    let zona = '';
+    if(pos<=6) zona=`<span class="pos-zona z-lib">${pos}</span>`;
+    else if(pos<=12) zona=`<span class="pos-zona z-sul">${pos}</span>`;
+    else if(pos>16) zona=`<span class="pos-zona z-rel">${pos}</span>`;
+    else zona=`<span style="font-size:12px;color:var(--text3)">${pos}</span>`;
+    const eu = t.id === meuTimeId;
+    const corTime = [...SERIE_A,...SERIE_B].find(x=>x.id===t.id)?.cor || '#555';
+    return `<tr class="${eu?'meu-time':''}">
+      <td>${zona}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:6px">
+        <span style="width:10px;height:10px;border-radius:50%;background:${corTime};display:inline-block;flex-shrink:0"></span>
+        ${t.nome}${eu?' ★':''}
+      </span></td>
+      <td style="font-weight:600;color:var(--amber)">${t.pts}</td>
+      <td>${t.j}</td>
+      <td style="color:var(--green2)">${t.v}</td>
+      <td style="color:var(--text3)">${t.e}</td>
+      <td style="color:var(--red)">${t.d}</td>
+      <td style="color:${t.sg>=0?'var(--green2)':'var(--red)'}">${t.sg>=0?'+':''}${t.sg}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────
+// MERCADO
+// ─────────────────────────────────────
+const MERCADO_JOGADORES = [
+  {pos:'AT',nome:'Pedro Guilherme',ovr:86,pot:88,idade:26,val:'R$ 38M',clube:'Flamengo',attrs:['Fin 86','Vel 79','Dri 83']},
+  {pos:'MC',nome:'Raphael Veiga',ovr:85,pot:86,idade:28,val:'R$ 40M',clube:'Palmeiras',attrs:['Pas 88','Vis 85','Chu 84']},
+  {pos:'ZAG',nome:'Gustavo Gómez',ovr:84,pot:84,idade:32,val:'R$ 22M',clube:'Palmeiras',attrs:['Mar 87','Cab 89','For 82']},
+  {pos:'PE',nome:'Estevão Willian',ovr:89,pot:95,idade:18,val:'R$ 120M',clube:'Palmeiras',attrs:['Dri 91','Vel 88','Pot 95']},
+  {pos:'AT',nome:'Luciano',ovr:80,pot:80,idade:31,val:'R$ 15M',clube:'São Paulo',attrs:['Fin 82','Pos 84','For 78']},
+  {pos:'VOL',nome:'Gérson',ovr:84,pot:85,idade:27,val:'R$ 35M',clube:'Flamengo',attrs:['Rec 85','Pas 83','Phy 80']},
+  {pos:'GL',nome:'Weverton',ovr:87,pot:87,idade:36,val:'R$ 10M',clube:'Palmeiras',attrs:['Ref 88','Pos 86','Com 84']},
+  {pos:'AT',nome:'Rony',ovr:81,pot:82,idade:28,val:'R$ 20M',clube:'Palmeiras',attrs:['Vel 87','Dri 80','For 78']},
+  {pos:'ZAG',nome:'Lucas Veríssimo',ovr:80,pot:81,idade:29,val:'R$ 18M',clube:'Botafogo',attrs:['Mar 82','Cab 80','Ldr 78']},
+  {pos:'MC',nome:'Andrey Santos',ovr:79,pot:90,idade:20,val:'R$ 30M',clube:'Vasco',attrs:['Pas 79','Rec 82','Pot 90']},
+];
+
+let filtroMercado = 'todos';
+
+window.filtrarMercado = (f, btn) => {
+  filtroMercado = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  renderMercado();
+};
+
+function renderMercado() {
+  const lista = filtroMercado === 'todos'
+    ? MERCADO_JOGADORES
+    : MERCADO_JOGADORES.filter(j => j.pos === filtroMercado);
+  const corPos = {AT:'#85B7EB',MC:'#97C459',PE:'#EF9F27',ZAG:'#F09595',VOL:'#AFA9EC',GL:'#5DCAA5'};
+  document.getElementById('lista-mercado').innerHTML = lista.map(j => `
+    <div class="player-card">
+      <div class="player-pos" style="background:var(--bg3);color:${corPos[j.pos]||'var(--text3)'}">${j.pos}</div>
+      <div class="player-info">
+        <div class="player-nome">${j.nome} <span style="font-size:11px;color:var(--text4)">(${j.idade} anos)</span></div>
+        <div class="player-attrs">${j.attrs.map(a=>`<span class="attr">${a}</span>`).join('')}</div>
+        <button class="btn-oferta" onclick="fazerOferta('${j.nome}','${j.val}')">Fazer oferta</button>
+      </div>
+      <div class="player-val">
+        <div class="player-preco">${j.val}</div>
+        <div class="player-clube">${j.clube}</div>
+        <div style="font-size:11px;margin-top:3px">
+          <span style="color:${j.ovr>=85?'var(--green2)':j.ovr>=78?'var(--amber)':'var(--text3)'}">OVR ${j.ovr}</span>
+          <span style="color:var(--text4)"> / POT ${j.pot}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+window.fazerOferta = (nome, val) => {
+  if(!meuTimeId) return notif('Sem time!','Assuma uma SAF primeiro.');
+  notif('Oferta enviada!', `Proposta por ${nome} (${val}) enviada ao clube vendedor.`);
+};
+
+// ─────────────────────────────────────
+// FINANÇAS
+// ─────────────────────────────────────
+function renderFinancas() {
+  if(!meuTime) return;
+  const t = meuTime;
+  const rows = [
+    {l:'Patrocínio máster', v:'+R$ '+Math.round(t.receita*0.5)+'M/mês', pos:true},
+    {l:'Direitos de TV (Globo)', v:'+R$ '+Math.round(t.receita*0.33)+'M/mês', pos:true},
+    {l:'Bilheteria (média)', v:'+R$ '+Math.round(t.receita*0.17)+'M/mês', pos:true},
+    {l:'Folha salarial', v:'-R$ '+t.folha+'M/mês', pos:false},
+    {l:'Centro de treinamento', v:'-R$ '+Math.round(t.folha*0.18)+'M/mês', pos:false},
+    {l:'Comissão agentes', v:'-R$ '+Math.round(t.folha*0.08)+'M/mês', pos:false},
+    {l:'Parcela empréstimo', v: t.divida > 0 ? '-R$ '+Math.round(t.divida*0.05)+'M/mês' : 'R$ 0 (sem dívidas)', pos: t.divida===0},
+  ];
+  document.getElementById('fin-rows').innerHTML = rows.map(r =>
+    `<div class="fin-row"><span class="fin-label">${r.l}</span><span class="${r.pos?'fin-pos':'fin-neg'}">${r.v}</span></div>`
+  ).join('');
+}
+
+window.pedirEmprestimo = async () => {
+  if(!meuTimeId) return notif('Sem time!','Assuma uma SAF primeiro.');
+  const valor = parseInt(prompt('Qual valor de empréstimo? (em milhões)\nEx: 50', '50'));
+  if(!valor || isNaN(valor)) return;
+  const novaDivida = (meuTime.divida||0) + valor;
+  const novoCaixa = (meuTime.caixa||0) + valor;
+  await update(ref(db,'times/'+meuTimeId), {divida: novaDivida, caixa: novoCaixa});
+  notif('Empréstimo aprovado!', `R$ ${valor}M creditados. Juros: 8% a.a.`);
+};
+
+window.negociarPatrocinio = () => {
+  notif('Patrocínio', 'Proposta enviada a 3 empresas parceiras. Resposta em 24h no jogo.');
+};
+
+// ─────────────────────────────────────
+// CHAT
+// ─────────────────────────────────────
+function renderChat(msgs) {
+  const el = document.getElementById('chat-msgs');
+  if(!el) return;
+  const arr = Object.values(msgs).sort((a,b)=>a.ts-b.ts).slice(-50);
+  el.innerHTML = arr.map(m => `
+    <div class="chat-msg">
+      <span class="chat-author">${m.autor}</span>
+      <span class="chat-time">${new Date(m.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+      <div class="chat-text">${m.texto}</div>
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+  const novos = arr.length - chatMsgCount;
+  if(novos > 0 && chatMsgCount > 0) {
+    const badge = document.getElementById('badge-chat');
+    const atual = parseInt(badge.textContent)||0;
+    badge.textContent = atual + novos;
+  }
+  chatMsgCount = arr.length;
+}
+
+window.enviarChat = async () => {
+  const input = document.getElementById('chat-input');
+  const texto = input.value.trim();
+  if(!texto || !usuarioAtual) return;
+  input.value = '';
+  const timeNome = meuTime?.nome || 'Sem time';
+  await push(ref(db,'chat'), {
+    autor: `${usuarioAtual.displayName} (${timeNome})`,
+    texto,
+    ts: Date.now(),
+    uid: usuarioAtual.uid
+  });
+};
+
+// ─────────────────────────────────────
+// NOTIFICAÇÕES
+// ─────────────────────────────────────
+window.notif = (titulo, msg) => {
+  const area = document.getElementById('notif-area');
+  const el = document.createElement('div');
+  el.className = 'notif';
+  el.innerHTML = `<div class="notif-title">${titulo}</div><div>${msg}</div>`;
+  area.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+};
+
+// ─────────────────────────────────────
+// NAVEGAÇÃO ENTRE PAINÉIS
+// ─────────────────────────────────────
+window.abrirPainel = (id) => {
+  document.querySelectorAll('.painel').forEach(p => p.classList.remove('ativo'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('ativo'));
+  document.getElementById('painel-'+id)?.classList.add('ativo');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if(n.getAttribute('onclick')?.includes("'"+id+"'")) n.classList.add('ativo');
+  });
+  if(id==='mercado') {
+    renderMercado();
+    document.getElementById('badge-mercado').textContent = '';
+  }
+  if(id==='chat') document.getElementById('badge-chat').textContent = '';
+  if(id==='dashboard') renderDashboard();
+  if(id==='elenco') renderElenco();
+  if(id==='taticas') renderTaticas();
+  if(id==='financas') renderFinancas();
+};
+
+// Inicializa o campo ao carregar
+setTimeout(renderCampo, 100);
+</script>
+</body>
+</html>
